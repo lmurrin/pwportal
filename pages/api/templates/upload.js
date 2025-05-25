@@ -70,6 +70,22 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "No company found for user." });
       }
 
+      const whereClause = {
+        companyId,
+        type,
+      };
+
+      if (type === "NOTICE" && subtype) {
+        whereClause.noticeSubtype = subtype;
+      }
+
+      // Count how many already exist in this group
+      const existingCount = await prisma.documentTemplate.count({
+        where: whereClause,
+      });
+
+      const shouldSetAsDefault = existingCount === 0; // ✅ first one in group
+
       const fileBuffer = await readFile(file.filepath);
 
       const key = `user-templates/${userId}/${type}/${
@@ -94,7 +110,7 @@ export default async function handler(req, res) {
           name,
           type,
           noticeSubtype: subtype || null,
-          isDefault: isDefault === "true",
+          isDefault: shouldSetAsDefault,
           fileUrl,
           key,
           companyId,

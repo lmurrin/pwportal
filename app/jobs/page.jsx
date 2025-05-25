@@ -60,13 +60,13 @@ export default function Jobs() {
                 scope="col"
                 className="hidden py-3.5 pl-4 pr-3 text-left text-xs font-medium uppercase text-gray-500 sm:table-cell"
               >
-                Email
+                BUILDING OWNER
               </th>
               <th
                 scope="col"
                 className="py-3.5 pl-4 pr-3 text-left text-xs font-medium uppercase text-gray-500"
               >
-                Role
+                NAMED SURVEYOR
               </th>
               <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
                 <span className="sr-only">Edit</span>
@@ -88,12 +88,17 @@ export default function Jobs() {
                   </dl>
                 </td>
                 <td className="hidden px-3 py-4 text-sm font-medium text-gray-900 lg:table-cell">
-                  {job.title}
+                  <Link
+                    href={`/jobs/${job.id}`}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    {job.title}
+                  </Link>
                 </td>
                 <td className="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                  {job.email}
+                  {job.bo_name}
                 </td>
-                <td className="px-3 py-4 text-sm text-gray-500">{job.role}</td>
+                <td className="px-3 py-4 text-sm text-gray-500">LM</td>
                 <td className="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                   <Link
                     href={`/jobs/${job.id}`}

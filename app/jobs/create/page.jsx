@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import PageHeader from "../../components/ui/PageHeader";
 import AddressModal from "../../components/jobs/create/AddressModal";
 import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function JobsNew() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,6 +12,7 @@ export default function JobsNew() {
   const [currentTitle, setCurrentTitle] = useState("");
   const [onSaveCallback, setOnSaveCallback] = useState(() => () => {});
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const openModal = (address, title, onSave) => {
     setCurrentAddress(address);
@@ -206,9 +207,56 @@ export default function JobsNew() {
     }
   };
 
+  /*=========================================
+     Handle Submit
+   =========================================*/
   const onSubmit = async (e) => {
     e.preventDefault();
     await handleCreateNewJob();
+  };
+
+  /*=========================================
+     Handle Copy Works Address to BO Address
+   =========================================*/
+  const handleCopyWorksAddressToBO = () => {
+    setOwnerAddress({
+      address1: worksAddress.address1,
+      address2: worksAddress.address2,
+      town: worksAddress.town,
+      county: worksAddress.county,
+      postcode: worksAddress.postcode,
+      country: worksAddress.country,
+    });
+  };
+
+  /*=========================================
+     Handle Copy Adjoining Owner's Address 
+     to Adjoining Property Address
+   =========================================*/
+  const handleCopyPropertyToOwnerAddress = (index) => {
+    const updatedOwners = [...adjoiningOwners];
+
+    updatedOwners[index] = {
+      ...updatedOwners[index],
+      ownerAddress: { ...updatedOwners[index].propertyAddress },
+    };
+
+    setAdjoiningOwners(updatedOwners);
+  };
+
+  /*=========================================
+     Handle paste works address
+   =========================================*/
+
+  const handlePasteWorksAddress = (index) => {
+    const updatedOwners = [...adjoiningOwners];
+
+    updatedOwners[index] = {
+      ...updatedOwners[index],
+      propertyAddress: { ...worksAddress },
+    };
+
+    setAdjoiningOwners(updatedOwners);
   };
 
   /*=========================================
@@ -414,6 +462,7 @@ export default function JobsNew() {
                     {worksAddress.address1.length > 1 && (
                       <button
                         type="button"
+                        onClick={handleCopyWorksAddressToBO}
                         className="ml-2 mb-4 px-2 py-1 border-1 border-indigo-100 cursor-pointer rounded text-xs font-semibold text-indigo-600 hover:bg-indigo-100"
                       >
                         Copy to owner's address
@@ -635,6 +684,7 @@ export default function JobsNew() {
                         {worksAddress.address1.length > 1 && (
                           <button
                             type="button"
+                            onClick={() => handlePasteWorksAddress(index)}
                             className="mb-2 px-2 py-1 border-1 border-indigo-100 cursor-pointer rounded text-xs font-semibold text-indigo-600 hover:bg-indigo-100"
                           >
                             Paste works address
@@ -643,6 +693,9 @@ export default function JobsNew() {
                         {owner.propertyAddress.address1.length > 1 && (
                           <button
                             type="button"
+                            onClick={() =>
+                              handleCopyPropertyToOwnerAddress(index)
+                            }
                             className="mb-4 px-2 py-1 border-1 border-indigo-100 cursor-pointer rounded text-xs font-semibold text-indigo-600 hover:bg-indigo-100"
                           >
                             Copy to owner's address
@@ -1069,7 +1122,7 @@ export default function JobsNew() {
           </button>
           <button
             type="submit"
-            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            className="cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Save
           </button>
