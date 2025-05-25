@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum OwnershipType {
+  FREEHOLDER
+  LEASEHOLDER
+  TENANT
+  OTHER
+}
+
+model User {
+  id        String             @id @default(cuid())
+  email     String             @unique
+  name      String?
+  role      Role               @default(USER)
+  jobs      Job[]
+  templates DocumentTemplate[]
+  profile   SurveyorProfile?
+  createdAt DateTime           @default(now())
+}
+
+model SurveyorProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  companyName  String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  postcode     String
+  phone        String
+  website      String?
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  reference   String?
+  description String?
+  status      JobStatus @default(DRAFT)
+  createdAt   DateTime  @default(now())
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  properties    AdjoiningProperty[]
+  generatedDocs GeneratedDocument[]
+}
+
+model AdjoiningProperty {
+  id           String   @id @default(cuid())
+  jobId        String
+  addressLine1 String
+  addressLine2 String?
+  postcode     String
+  createdAt    DateTime @default(now())
+
+  job    Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  owners Owner[]
+}
+
+model Owner {
+  id            String         @id @default(cuid())
+  propertyId    String
+  fullName      String
+  email         String?
+  phone         String?
+  ownershipType OwnershipType?
+  createdAt     DateTime       @default(now())
+
+  adjoiningProperty AdjoiningProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model DocumentTemplate {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  fileUrl     String
+  tagsUsed    String[] // merge tag names like ["{{owner_name}}", "{{property_address}}"]
+  createdAt   DateTime @default(now())
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generatedDocs GeneratedDocument[]
+}
+
+model GeneratedDocument {
+  id         String   @id @default(cuid())
+  jobId      String
+  templateId String
+  fileUrl    String
+  createdAt  DateTime @default(now())
+
+  job      Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  template DocumentTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,14 @@
+# Prisma
+DATABASE_URL=
+
+# DigitalOcean Spaces
+DO_SPACES_KEY=
+DO_SPACES_SECRET=
+DO_SPACES_REGION=
+DO_SPACES_ENDPOINT=
+DO_SPACES_BUCKET=
+
+# NextAuth
+NEXTAUTH_SECRET=your-secret
+NEXTAUTH_URL=http://localhost:3000
+

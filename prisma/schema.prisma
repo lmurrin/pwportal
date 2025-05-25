@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String           @id @default(cuid())
+  email              String           @unique
+  name               String?
+  role               Role             @default(USER)
+  createdAt          DateTime         @default(now())
+  phone              String?
+  password           String?
+  companyMemberships CompanyUser[]
+  namedJobs          Job[]            @relation("NamedSurveyor")
+  jobs               Job[]            @relation("CreatorJobs")
+  profile            SurveyorProfile?
+}
+
+model CompanyUser {
+  id        String      @id @default(cuid())
+  userId    String
+  companyId String?
+  role      CompanyRole
+  createdAt DateTime    @default(now())
+  company   Company?    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
+}
+
+model Company {
+  id        String             @id @default(cuid())
+  name      String
+  createdAt DateTime           @default(now())
+  users     CompanyUser[]
+  templates DocumentTemplate[]
+  jobs      Job[]              @relation("CompanyJobs")
+}
+
+model SurveyorProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  companyName  String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  postcode     String
+  phone        String
+  website      String?
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id              String              @id @default(cuid())
+  userId          String
+  title           String
+  reference       String?
+  description     String?
+  status          JobStatus           @default(DRAFT)
+  createdAt       DateTime            @default(now())
+  bo_address1     String?
+  bo_address2     String?
+  bo_country      String?
+  bo_county       String?
+  bo_email        String?
+  bo_name         String?
+  bo_name_corr    String?
+  bo_phone        String?
+  bo_postcode     String?
+  bo_town         String?
+  work_address1   String?
+  work_address2   String?
+  work_country    String?
+  work_county     String?
+  work_postcode   String?
+  work_town       String?
+  companyId       String?
+  namedSurveyorId String?
+  ownership_type  OwnershipType       @default(FREEHOLDER)
+  owner_plurality Plurality           @default(SINGLE)
+  properties      AdjoiningProperty[]
+  generatedDocs   GeneratedDocument[]
+  company         Company?            @relation("CompanyJobs", fields: [companyId], references: [id], onDelete: Cascade)
+  namedSurveyor   User?               @relation("NamedSurveyor", fields: [namedSurveyorId], references: [id])
+  user            User                @relation("CreatorJobs", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdjoiningProperty {
+  id              String        @id @default(cuid())
+  jobId           String
+  addressLine1    String?
+  addressLine2    String?
+  postcode        String?
+  createdAt       DateTime      @default(now())
+  country         String?
+  county          String?
+  owner_address1  String?
+  owner_address2  String?
+  owner_corr_name String?
+  owner_country   String?
+  owner_county    String?
+  owner_name      String?
+  owner_postcode  String?
+  owner_town      String?
+  ownership_type  OwnershipType @default(FREEHOLDER)
+  town            String?
+  owner_plurality Plurality     @default(SINGLE)
+  job             Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model DocumentTemplate {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  description String?
+  fileUrl     String
+  key         String     
+  tagsUsed    String[]
+  type        TemplateType
+  noticeSubtype String?
+  isDefault   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+
+  company       Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  generatedDocs GeneratedDocument[]
+}
+
+
+model GeneratedDocument {
+  id         String           @id @default(cuid())
+  jobId      String
+  templateId String
+  fileUrl    String
+  createdAt  DateTime         @default(now())
+  job        Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  template   DocumentTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum OwnershipType {
+  FREEHOLDER
+  LEASEHOLDER
+  TENANT
+  OTHER
+}
+
+enum CompanyRole {
+  SURVEYOR
+  ADMINISTRATOR
+  SUPPORT
+}
+
+enum Plurality {
+  SINGLE
+  MULTIPLE
+}
+
+enum TemplateType {
+  NOTICE
+  LETTER
+  AWARD
+}
+
+enum NoticeSubtype {
+  S1
+  S3
+  S6
+}
