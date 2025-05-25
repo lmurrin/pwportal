@@ -3,6 +3,9 @@
 import "./globals.css";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import {
   Disclosure,
@@ -14,6 +17,7 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useEffect } from "react";
 
 const user = {
   name: "Tom Cook",
@@ -53,14 +57,49 @@ const noLayoutRoutes = ["/login", "/register", "/forgot-password"];
 // Remove ReactNode type from children
 export default function LayoutClient({ children }) {
   const pathname = usePathname();
-  const session = useSession();
-
-  console.log(session);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   const isExcluded = noLayoutRoutes.includes(pathname);
 
+  useEffect(() => {
+    if (!isExcluded && status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, pathname, isExcluded]);
+
   if (isExcluded) {
     return <>{children}</>;
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white text-gray-600">
+        <div className="flex flex-col items-center space-y-4">
+          <svg
+            className="animate-spin h-8 w-8 text-indigo-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8H4z"
+            ></path>
+          </svg>
+          <p className="text-sm font-medium">Loading session...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -127,16 +166,27 @@ export default function LayoutClient({ children }) {
                     transition
                     className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
                   >
-                    {userNavigation.map((item) => (
-                      <MenuItem key={item.name}>
-                        <a
-                          href={item.href}
-                          className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
-                        >
-                          {item.name}
-                        </a>
-                      </MenuItem>
-                    ))}
+                    {userNavigation.map((item) =>
+                      item.name === "Sign out" ? (
+                        <MenuItem key={item.name}>
+                          <button
+                            onClick={() => signOut({ callbackUrl: "/login" })}
+                            className="cursor-pointer block w-full text-left px-4 py-2 text-sm text-gray-700"
+                          >
+                            {item.name}
+                          </button>
+                        </MenuItem>
+                      ) : (
+                        <MenuItem key={item.name}>
+                          <a
+                            href={item.href}
+                            className="block px-4 py-2 text-sm text-gray-700"
+                          >
+                            {item.name}
+                          </a>
+                        </MenuItem>
+                      )
+                    )}
                   </MenuItems>
                 </Menu>
               </div>
@@ -160,22 +210,38 @@ export default function LayoutClient({ children }) {
 
           <DisclosurePanel className="sm:hidden">
             <div className="space-y-1 pb-3 pt-2">
-              {navigation.map((item) => (
-                <DisclosureButton
-                  key={item.name}
-                  as="a"
-                  href={item.href}
-                  aria-current={item.current ? "page" : undefined}
-                  className={classNames(
-                    item.current
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                      : "border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800",
-                    "block border-l-4 py-2 pl-3 pr-4 text-base font-medium"
-                  )}
-                >
-                  {item.name}
-                </DisclosureButton>
-              ))}
+              {navigation.map((item) => {
+                const isActive = pathname === item.href;
+
+                return item.name === "Sign out" ? (
+                  <DisclosureButton
+                    key="signout"
+                    as="button"
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    className={classNames(
+                      "cursor-pointer text-left w-full border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800",
+                      "block border-l-4 py-2 pl-3 pr-4 text-base font-medium"
+                    )}
+                  >
+                    Sign out
+                  </DisclosureButton>
+                ) : (
+                  <DisclosureButton
+                    key={item.name}
+                    as={Link}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={classNames(
+                      isActive
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        : "border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800",
+                      "block border-l-4 py-2 pl-3 pr-4 text-base font-medium"
+                    )}
+                  >
+                    {item.name}
+                  </DisclosureButton>
+                );
+              })}
             </div>
             <div className="border-t border-gray-200 pb-3 pt-4">
               <div className="flex items-center px-4">
