@@ -202,9 +202,6 @@ Handle create notice
   return (
     <>
       <div>
-        <div className="border-b border-gray-200 pt-5 pb-5">
-          <h3 className="text-base font-semibold text-gray-900">Recipient</h3>
-        </div>
         <dl className="grid grid-cols-1 sm:grid-cols-2 mb-6">
           <div className=" px-4 py-6 col-span-full sm:px-0">
             <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
@@ -217,7 +214,7 @@ Handle create notice
                 }}
               >
                 <Label className="block text-sm/6 font-medium text-gray-900">
-                  To
+                  Recipient
                 </Label>
                 <div className="relative mt-2">
                   <ComboboxInput
@@ -320,14 +317,16 @@ Handle create notice
           )}
         </dl>
         <div className="border-b border-gray-200 pt-6 pb-5">
-          <h3 className="text-base font-semibold text-gray-900">Works</h3>
+          <h3 className="text-base font-semibold text-gray-900">
+            Notice Sections
+          </h3>
         </div>
         <dl className="grid grid-cols-1">
           <div className="px-4 py-6 sm:col-span-1 sm:px-0">
             <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-700">
-                  Notice Sections
+                  Select the section(s) you wish to serve notice under
                 </label>
                 <div className="space-y-2">
                   {noticeSections.map((section) => (
@@ -642,52 +641,55 @@ Handle create notice
         )}
 
         {/* Template Selection */}
+        <div className=" mb-30">
+          {selectedSections.map((sectionId) => {
+            const subtype = `S${sectionId}`;
+            const templates = getTemplatesForSection(subtype);
 
-        {selectedSections.map((sectionId) => {
-          const subtype = `S${sectionId}`;
-          const templates = getTemplatesForSection(subtype);
+            // Determine default template ID for this section
+            const defaultTemplate = templates.find((tpl) => tpl.isDefault);
 
-          // Determine default template ID for this section
-          const defaultTemplate = templates.find((tpl) => tpl.isDefault);
-
-          return (
-            <div key={subtype} className="mt-6">
-              <label
-                htmlFor={`template-${subtype}`}
-                className="block text-sm font-medium text-gray-700"
-              >
-                Template for {subtype} Notice
-              </label>
-              <div className="mt-2 grid grid-cols-1">
-                <select
-                  id={`template-${subtype}`}
-                  name={`template-${subtype}`}
-                  className="mt-1 col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                  value={sectionTemplates[subtype] ?? defaultTemplate?.id ?? ""}
-                  onChange={(e) =>
-                    setSectionTemplates((prev) => ({
-                      ...prev,
-                      [subtype]: e.target.value,
-                    }))
-                  }
+            return (
+              <div key={subtype} className="mt-6">
+                <label
+                  htmlFor={`template-${subtype}`}
+                  className="block text-sm font-medium text-gray-700"
                 >
-                  <option value="">Select a template</option>
-                  {templates.map((tpl) => (
-                    <option key={tpl.id} value={tpl.id}>
-                      {tpl.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon
-                  aria-hidden="true"
-                  className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-                />
+                  Template for {subtype} Notice
+                </label>
+                <div className="mt-2 grid grid-cols-1 w-100">
+                  <select
+                    id={`template-${subtype}`}
+                    name={`template-${subtype}`}
+                    className="mt-1 col-start-1 row-start-1  appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                    value={
+                      sectionTemplates[subtype] ?? defaultTemplate?.id ?? ""
+                    }
+                    onChange={(e) =>
+                      setSectionTemplates((prev) => ({
+                        ...prev,
+                        [subtype]: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">Select a template</option>
+                    {templates.map((tpl) => (
+                      <option key={tpl.id} value={tpl.id}>
+                        {tpl.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon
+                    aria-hidden="true"
+                    className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
+                  />
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
-        <div className="border-t-1 border-gray-200 pt-4 mt-6 flex items-center justify-end gap-x-6">
+        <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white px-12 py-4 flex items-center justify-end gap-x-6 shadow-md">
           <button
             type="submit"
             onClick={handleCreateNotice}

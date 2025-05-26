@@ -1,8 +1,9 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CreateNoticeForm from "../../forms/CreateNoticeForm";
+import Overlay from "../../ui/Overlay";
 
 import { ChevronRightIcon } from "@heroicons/react/16/solid";
 import { HomeIcon, PaperClipIcon, UserIcon } from "@heroicons/react/20/solid";
@@ -21,6 +22,8 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
   const [selectedNotice, setSelectedNotice] = useState(null);
   const searchParams = useSearchParams();
   const showNewNoticeForm = searchParams.get("new-notice") === "true";
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   // Fetch notices
   useEffect(() => {
@@ -85,6 +88,7 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
 
           <button
             type="button"
+            onClick={() => setOpen(true)}
             className="mt-2 rounded-full bg-indigo-600 p-1 text-xs flex items-center gap-1 pr-3 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             <PlusIcon aria-hidden="true" className="size-5" /> Add
@@ -93,42 +97,6 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
 
         {/* Main content */}
         <main className="flex-1 px-4 sm:px-6 lg:px-8">
-          <div className=" border-gray-200 pb-2 sm:flex sm:items-center sm:justify-between">
-            <div className="rounded-md sm:mt-0 flex items-center gap-2 bg-indigo-50 border border-indigo-100 w-full">
-              <div className="py-4 px-3 bg-indigo-100">
-                <h3 className="text-xs font-bold text-gray-600">Actions:</h3>
-              </div>
-              <div className="py-2 flex gap-2">
-                <button
-                  type="button"
-                  className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                >
-                  <PencilIcon aria-hidden="true" className="-ml-0.5 size-4" />
-                  Edit Notice
-                </button>
-                <button
-                  type="button"
-                  className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                >
-                  <DocumentArrowDownIcon
-                    aria-hidden="true"
-                    className="-ml-0.5 size-4"
-                  />
-                  Download Word
-                </button>
-                <button
-                  type="button"
-                  className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                >
-                  <ArrowUpLeftIcon
-                    aria-hidden="true"
-                    className="-ml-0.5 size-4"
-                  />
-                  Record Response
-                </button>
-              </div>
-            </div>
-          </div>
           {showNewNoticeForm ? (
             <CreateNoticeForm
               jobDetails={jobDetails}
@@ -136,112 +104,157 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
               notice={selectedNotice}
             />
           ) : selectedNotice ? (
-            <div className="space-y-4">
-              <div className="border-b border-gray-200 pt-5 pb-5">
-                <h3 className="text-base font-semibold text-gray-900">
-                  Notice Details
-                </h3>
-              </div>
-              <dl className="grid grid-cols-1 sm:grid-cols-2 mb-6">
-                <div className=" px-4 py-6 col-span-full sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    Notice served on
-                  </dt>
-                  <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
-                    {selectedNotice.ownerName}
-                  </dd>
-                </div>
-                <div className="px-4 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">Of</dt>
-                  <div className="whitespace-pre-line text-sm/6 text-gray-700">
-                    {[
-                      selectedNotice.adjoiningProperty?.owner_address1,
-                      selectedNotice.adjoiningProperty?.owner_address2,
-                      selectedNotice.adjoiningProperty?.owner_town,
-                      selectedNotice.adjoiningProperty?.owner_county,
-                      selectedNotice.adjoiningProperty?.owner_postcode,
-                      selectedNotice.adjoiningProperty?.owner_country,
-                    ]
-                      .filter((part) => part && part.trim() !== "")
-                      .join("\n")}
+            <>
+              <div className=" border-gray-200 pb-2 sm:flex sm:items-center sm:justify-between">
+                <div className="rounded-md sm:mt-0 flex items-center gap-2 bg-indigo-50 border border-indigo-100 w-full">
+                  <div className="py-4 px-3 bg-indigo-100">
+                    <h3 className="text-xs font-bold text-gray-600">
+                      Actions:
+                    </h3>
                   </div>
-                </div>
-                <div className="px-4 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    Adjoining Property
-                  </dt>
-                  <div className="whitespace-pre-line text-sm/6 text-gray-700">
-                    {[
-                      selectedNotice.adjoiningProperty?.addressLine1,
-                      selectedNotice.adjoiningProperty?.addressLine2,
-                      selectedNotice.adjoiningProperty?.town,
-                      selectedNotice.adjoiningProperty?.county,
-                      selectedNotice.adjoiningProperty?.postcode,
-                    ]
-                      .filter((part) => part && part.trim() !== "")
-                      .join("\n")}
-                  </div>
-                </div>
-              </dl>
-
-              <dl className="grid grid-cols-1 sm:grid-cols-2">
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    Notice Served Under
-                  </dt>
-                  <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
-                    {selectedNotice.sections.join(", ")}
-                  </dd>
-                </div>
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    Served on
-                  </dt>
-                  <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
-                    {new Date(selectedNotice.startDate).toLocaleDateString()}
-                  </dd>
-                </div>
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0">
-                  <div>
-                    <dt className="text-sm/6 font-medium text-gray-900">
-                      Response
-                    </dt>
-                    <div className="w-60 mt-2 grid grid-cols-1">
-                      <select
-                        id="noticeResponse"
-                        name="noticeResponse"
-                        defaultValue=""
-                        placeholder="Select response"
-                        className="w-60 col-start-1 row-start-1 appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                      >
-                        <option>Consent</option>
-                        <option>Consent subject to SOC</option>
-                        <option>Dissent (Two Surveyors)</option>
-                        <option>Dissent (Agreed Surveyors)</option>
-                      </select>
-                      <ChevronDownIcon
+                  <div className="py-2 flex gap-2">
+                    <button
+                      type="button"
+                      className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                    >
+                      <PencilIcon
                         aria-hidden="true"
-                        className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
+                        className="-ml-0.5 size-4"
                       />
+                      Edit Notice
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                    >
+                      <DocumentArrowDownIcon
+                        aria-hidden="true"
+                        className="-ml-0.5 size-4"
+                      />
+                      Download Word
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                    >
+                      <ArrowUpLeftIcon
+                        aria-hidden="true"
+                        className="-ml-0.5 size-4"
+                      />
+                      Record Response
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="border-b border-gray-200 pt-5 pb-5">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Notice Details
+                  </h3>
+                </div>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 mb-6">
+                  <div className=" px-4 py-6 col-span-full sm:px-0">
+                    <dt className="text-sm/6 font-medium text-gray-900">
+                      Notice served on
+                    </dt>
+                    <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
+                      {selectedNotice.ownerName}
+                    </dd>
+                  </div>
+                  <div className="px-4 sm:col-span-1 sm:px-0">
+                    <dt className="text-sm/6 font-medium text-gray-900">Of</dt>
+                    <div className="whitespace-pre-line text-sm/6 text-gray-700">
+                      {[
+                        selectedNotice.adjoiningProperty?.owner_address1,
+                        selectedNotice.adjoiningProperty?.owner_address2,
+                        selectedNotice.adjoiningProperty?.owner_town,
+                        selectedNotice.adjoiningProperty?.owner_county,
+                        selectedNotice.adjoiningProperty?.owner_postcode,
+                        selectedNotice.adjoiningProperty?.owner_country,
+                      ]
+                        .filter((part) => part && part.trim() !== "")
+                        .join("\n")}
                     </div>
                   </div>
-                </div>
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    Response due on
-                  </dt>
-                  <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
-                    {new Date(selectedNotice.responseDate).toLocaleDateString()}
-                  </dd>
-                </div>
-              </dl>
+                  <div className="px-4 sm:col-span-1 sm:px-0">
+                    <dt className="text-sm/6 font-medium text-gray-900">
+                      Adjoining Property
+                    </dt>
+                    <div className="whitespace-pre-line text-sm/6 text-gray-700">
+                      {[
+                        selectedNotice.adjoiningProperty?.addressLine1,
+                        selectedNotice.adjoiningProperty?.addressLine2,
+                        selectedNotice.adjoiningProperty?.town,
+                        selectedNotice.adjoiningProperty?.county,
+                        selectedNotice.adjoiningProperty?.postcode,
+                      ]
+                        .filter((part) => part && part.trim() !== "")
+                        .join("\n")}
+                    </div>
+                  </div>
+                </dl>
 
-              <div className="border-b border-gray-200 pt-5 pb-5">
-                <h3 className="text-base font-semibold text-gray-900">
-                  Appointed Surveyor
-                </h3>
+                <dl className="grid grid-cols-1 sm:grid-cols-2">
+                  <div className="px-4 py-6 sm:col-span-1 sm:px-0">
+                    <dt className="text-sm/6 font-medium text-gray-900">
+                      Notice Served Under
+                    </dt>
+                    <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
+                      {selectedNotice.sections.join(", ")}
+                    </dd>
+                  </div>
+                  <div className="px-4 py-6 sm:col-span-1 sm:px-0">
+                    <dt className="text-sm/6 font-medium text-gray-900">
+                      Served on
+                    </dt>
+                    <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
+                      {new Date(selectedNotice.startDate).toLocaleDateString()}
+                    </dd>
+                  </div>
+                  <div className="px-4 py-6 sm:col-span-1 sm:px-0">
+                    <div>
+                      <dt className="text-sm/6 font-medium text-gray-900">
+                        Response
+                      </dt>
+                      <div className="w-60 mt-2 grid grid-cols-1">
+                        <select
+                          id="noticeResponse"
+                          name="noticeResponse"
+                          defaultValue=""
+                          placeholder="Select response"
+                          className="w-60 col-start-1 row-start-1 appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                        >
+                          <option>Consent</option>
+                          <option>Consent subject to SOC</option>
+                          <option>Dissent (Two Surveyors)</option>
+                          <option>Dissent (Agreed Surveyors)</option>
+                        </select>
+                        <ChevronDownIcon
+                          aria-hidden="true"
+                          className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="px-4 py-6 sm:col-span-1 sm:px-0">
+                    <dt className="text-sm/6 font-medium text-gray-900">
+                      Response due on
+                    </dt>
+                    <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
+                      {new Date(
+                        selectedNotice.responseDate
+                      ).toLocaleDateString()}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="border-b border-gray-200 pt-5 pb-5">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Appointed Surveyor
+                  </h3>
+                </div>
               </div>
-            </div>
+            </>
           ) : (
             <p className="text-sm text-gray-500">
               Select a notice to view details.
@@ -249,6 +262,13 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
           )}
         </main>
       </div>
+      <Overlay open={open} setOpen={setOpen} title="Create Notice">
+        <CreateNoticeForm
+          jobDetails={jobDetails}
+          adjoiningProperties={adjoiningProperties}
+          notice={selectedNotice}
+        />
+      </Overlay>
     </>
   );
 }
