@@ -88,6 +88,7 @@ model Job {
   company         Company?            @relation("CompanyJobs", fields: [companyId], references: [id], onDelete: Cascade)
   namedSurveyor   User?               @relation("NamedSurveyor", fields: [namedSurveyorId], references: [id])
   user            User                @relation("CreatorJobs", fields: [userId], references: [id], onDelete: Cascade)
+  GeneratedNotice GeneratedNotice[]
 }
 
 model AdjoiningProperty {
@@ -110,35 +111,105 @@ model AdjoiningProperty {
   ownership_type  OwnershipType @default(FREEHOLDER)
   town            String?
   owner_plurality Plurality     @default(SINGLE)
-  job             Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  notices              GeneratedNotice[]
+  surveyorAppointments SurveyorAppointment[]
 }
 
 model DocumentTemplate {
-  id          String   @id @default(cuid())
-  companyId   String
-  name        String
-  description String?
-  fileUrl     String
-  key         String     
-  tagsUsed    String[]
-  type        TemplateType
-  noticeSubtype String?
-  isDefault   Boolean    @default(false)
-  createdAt   DateTime   @default(now())
+  id             String       @id @default(cuid())
+  companyId      String
+  name           String
+  description    String?
+  fileUrl        String
+  key            String
+  tagsUsed       String[]
+  type           TemplateType
+  noticeSubtype  String?
+  systemTemplate Boolean      @default(false)
+  isDefault      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
 
   company       Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   generatedDocs GeneratedDocument[]
+
+  // Back-relations to GeneratedNotice (template used in notice)
+  usedAsTemplateS1 GeneratedNotice[] @relation("TemplateS1")
+  usedAsTemplateS3 GeneratedNotice[] @relation("TemplateS3")
+  usedAsTemplateS6 GeneratedNotice[] @relation("TemplateS6")
 }
 
-
 model GeneratedDocument {
-  id         String           @id @default(cuid())
-  jobId      String
-  templateId String
-  fileUrl    String
-  createdAt  DateTime         @default(now())
-  job        Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  template   DocumentTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  jobId             String
+  templateId        String
+  fileUrl           String
+  createdAt         DateTime @default(now())
+  generatedNoticeId String?
+
+  job      Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  template DocumentTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  notice   GeneratedNotice? @relation(fields: [generatedNoticeId], references: [id])
+}
+
+model GeneratedNotice {
+  id                  String   @id @default(cuid())
+  jobId               String
+  adjoiningPropertyId String
+  ownerName           String
+  startDate           DateTime
+  responseDate        DateTime
+  sections            String[]
+
+  s1WallPosition String?
+  s1Footings     String?
+  s1Description  String?
+
+  s3Paragraphs  String[]
+  s3Description String?
+
+  s6DistanceType String?
+  s6Safeguard    String?
+  s6Description  String?
+
+  templateS1Id String?
+  templateS3Id String?
+  templateS6Id String?
+
+  // Template relations
+  templateS1 DocumentTemplate? @relation("TemplateS1", fields: [templateS1Id], references: [id])
+  templateS3 DocumentTemplate? @relation("TemplateS3", fields: [templateS3Id], references: [id])
+  templateS6 DocumentTemplate? @relation("TemplateS6", fields: [templateS6Id], references: [id])
+
+  // Base relations
+  job               Job                 @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  adjoiningProperty AdjoiningProperty   @relation(fields: [adjoiningPropertyId], references: [id], onDelete: Cascade)
+  createdAt         DateTime            @default(now())
+  documents         GeneratedDocument[]
+}
+
+model SurveyorAppointment {
+  id               String    @id @default(cuid())
+  adjoiningOwnerId String
+  surveyorId       String
+  role             PartyRole
+  createdAt        DateTime  @default(now())
+
+  adjoiningOwner AdjoiningProperty @relation(fields: [adjoiningOwnerId], references: [id], onDelete: Cascade)
+  surveyor       Surveyor          @relation(fields: [surveyorId], references: [id], onDelete: Cascade)
+}
+
+model Surveyor {
+  id      String  @id @default(cuid())
+  name    String
+  company String?
+  email   String?
+  phone   String?
+  address String?
+
+  appointments SurveyorAppointment[] // 👈 Back relation
 }
 
 enum Role {
@@ -151,6 +222,12 @@ enum JobStatus {
   ACTIVE
   COMPLETED
   CANCELLED
+}
+
+enum NoticeStatus {
+  DRAFT
+  SENT
+  RESPONDED
 }
 
 enum OwnershipType {
@@ -181,4 +258,18 @@ enum NoticeSubtype {
   S1
   S3
   S6
+}
+
+enum NoticeResponseType {
+  CONSENT
+  CONSENT_SOC
+  DISSENT_TWO_SURVEYORS
+  DISSENT_AGREED_SURVEYOR
+  NO_RESPONSE
+}
+
+enum PartyRole {
+  BUILDING_OWNER
+  ADJOINING_OWNER
+  AGREED_SURVEYOR
 }

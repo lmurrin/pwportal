@@ -18,6 +18,7 @@ import {
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
 
 const user = {
   name: "Tom Cook",
@@ -27,11 +28,11 @@ const user = {
 };
 
 const navigation = [
-  { name: "Dashboard", href: "#", current: true },
-  { name: "Jobs", href: "/jobs", current: false },
-  { name: "Calendar", href: "#", current: false },
-  { name: "Tracker", href: "#", current: false },
-  { name: "Templates", href: "/templates", current: false },
+  { name: "Dashboard", href: "/" },
+  { name: "Jobs", href: "/jobs" },
+  { name: "Calendar", href: "/calendar" },
+  { name: "Tracker", href: "/tracker" },
+  { name: "Templates", href: "/templates" },
 ];
 
 const userNavigation = [
@@ -73,33 +74,7 @@ export default function LayoutClient({ children }) {
   }
 
   if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-gray-600">
-        <div className="flex flex-col items-center space-y-4">
-          <svg
-            className="animate-spin h-8 w-8 text-indigo-600"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v8H4z"
-            ></path>
-          </svg>
-          <p className="text-sm font-medium">Loading session...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -122,21 +97,28 @@ export default function LayoutClient({ children }) {
                   />
                 </div>
                 <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
-                  {navigation.map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      aria-current={item.current ? "page" : undefined}
-                      className={classNames(
-                        item.current
-                          ? "border-indigo-500 text-gray-900"
-                          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
-                        "inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium"
-                      )}
-                    >
-                      {item.name}
-                    </a>
-                  ))}
+                  {navigation.map((item) => {
+                    const isActive =
+                      item.href === "/"
+                        ? pathname === "/"
+                        : pathname.startsWith(item.href);
+
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        aria-current={isActive ? "page" : undefined}
+                        className={classNames(
+                          isActive
+                            ? "border-indigo-500 text-gray-900"
+                            : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
+                          "inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium"
+                        )}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:items-center">
@@ -211,7 +193,10 @@ export default function LayoutClient({ children }) {
           <DisclosurePanel className="sm:hidden">
             <div className="space-y-1 pb-3 pt-2">
               {navigation.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href);
 
                 return item.name === "Sign out" ? (
                   <DisclosureButton

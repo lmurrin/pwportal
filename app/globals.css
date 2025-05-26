@@ -1,5 +1,15 @@
 @import "tailwindcss";
 @plugin "daisyui";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  a,
+  button {
+    @apply cursor-pointer;
+  }
+}
 
 :root {
   --background: #ffffff;

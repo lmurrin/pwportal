@@ -14,6 +14,7 @@ import TabAdjoiningProperties from "../../components/jobs/single/TabAdjoiningPro
 import TabNotices from "@/app/components/jobs/single/TabNotices";
 import DownloadNoticeButton from "@/app/components/documents/DownloadNoticeButton";
 import GenerateDocumentForm from "@/app/components/documents/GenerateDocForm";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 
 // Sidebar nav quicklinks
 const quickLinks = [
@@ -83,7 +84,7 @@ export default function JobDetailPage() {
     }
   }, [jobId]);
 
-  if (!jobDetails) return <p>Loading...</p>;
+  if (!jobDetails) return <LoadingSpinner />;
 
   return (
     <>

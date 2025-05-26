@@ -101,18 +101,23 @@ export default function TabJobDetails({
                           <tbody className="divide-y divide-gray-200 bg-white">
                             {adjoiningProperties.map((property) => (
                               <tr key={property.id}>
-                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-indigo-600 sm:pl-0">
-                                  {[
-                                    property.addressLine1,
-                                    property.addressLine2,
-                                    property.town,
-                                    property.county,
-                                    property.postcode,
-                                  ]
-                                    .filter(
-                                      (part) => part && part.trim() !== ""
-                                    )
-                                    .join(", ")}
+                                <td>
+                                  <a
+                                    href={`/jobs/${jobDetails.id}?tab=adjoining-properties`}
+                                    className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-indigo-600 sm:pl-0"
+                                  >
+                                    {[
+                                      property.addressLine1,
+                                      property.addressLine2,
+                                      property.town,
+                                      property.county,
+                                      property.postcode,
+                                    ]
+                                      .filter(
+                                        (part) => part && part.trim() !== ""
+                                      )
+                                      .join(", ")}
+                                  </a>
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                   {property.owner_name}
@@ -120,7 +125,7 @@ export default function TabJobDetails({
 
                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm sm:pr-0">
                                   <a
-                                    href="#"
+                                    href={`/jobs/${jobDetails.id}?tab=adjoining-properties`}
                                     className="text-indigo-600 hover:text-indigo-900"
                                   >
                                     Manage
