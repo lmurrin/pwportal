@@ -4,12 +4,15 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import PageHeader from "../components/ui/PageHeader";
 import { useRouter } from "next/navigation";
+import { useOverlay } from "../context/OverlayContext";
+import CreateJobForm from "../components/forms/CreateJobForm";
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const { showOverlay } = useOverlay();
 
   useEffect(() => {
     async function fetchJobs() {
@@ -39,7 +42,11 @@ export default function Jobs() {
 
   return (
     <>
-      <PageHeader title="Jobs" primaryBtnText="Create Job" />
+      <PageHeader
+        title="Jobs"
+        primaryBtnText="Create Job"
+        onPrimaryClick={() => showOverlay("Create New Job", <CreateJobForm />)}
+      />
       <main>
         <table className="min-w-full divide-y divide-gray-300">
           <thead>

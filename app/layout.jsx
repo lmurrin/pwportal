@@ -4,6 +4,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import LayoutClient from "./layoutClient";
 import { SessionProvider } from "next-auth/react";
+import { OverlayProvider } from "./context/OverlayContext";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -18,7 +19,9 @@ export default function RootLayout({ children }) {
       <html lang="en" className={inter.variable}>
         <body className="bg-base-100 text-base-content font-sans">
           <main>
-            <LayoutClient>{children}</LayoutClient>
+            <LayoutClient>
+              <OverlayProvider>{children}</OverlayProvider>
+            </LayoutClient>
           </main>
         </body>
       </html>
