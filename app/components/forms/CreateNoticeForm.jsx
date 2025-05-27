@@ -156,46 +156,81 @@ Handle create notice
       return;
     }
 
-    const payload = {
+    const commonData = {
       jobId: jobDetails.id,
       adjoiningPropertyId: selectedProperty.id,
       ownerName: selectedProperty.owner_name,
-      sections: selectedSections.map((id) => `S${id}`),
       startDate,
       responseDate: responseDateState,
-      templates: sectionTemplates,
-      s1Details: {
-        wallPosition: document.getElementById("s1WallLocation")?.value,
-        projectingFootings:
-          document.getElementById("projectingFootings")?.value,
-        description: document.getElementById("s1WorksDescription")?.value,
-      },
-      s3Details: {
-        paragraphs: s3Paragraphs,
-        description: document.getElementById("s3WorksDescription")?.value,
-      },
-      s6Details: {
-        distanceType: document.getElementById("3m6mNotice")?.value,
-        safeguard: document.getElementById("safeguardAdjoiningProperty")?.value,
-        description: document.getElementById("s6WorksDescription")?.value,
-      },
     };
 
+    const s1Details = {
+      wallPosition: document.getElementById("s1WallLocation")?.value,
+      projectingFootings: document.getElementById("projectingFootings")?.value,
+      description: document.getElementById("s1WorksDescription")?.value,
+    };
+
+    const s3Details = {
+      paragraphs: s3Paragraphs,
+      description: document.getElementById("s3WorksDescription")?.value,
+    };
+
+    const s6Details = {
+      distanceType: document.getElementById("3m6mNotice")?.value,
+      safeguard: document.getElementById("safeguardAdjoiningProperty")?.value,
+      description: document.getElementById("s6WorksDescription")?.value,
+    };
+
+    const noticesToCreate = selectedSections.map((sectionId) => {
+      const section = `S${sectionId}`;
+      const base = {
+        ...commonData,
+        sections: [section],
+      };
+
+      if (section === "S1") {
+        return {
+          ...base,
+          templates: { S1: sectionTemplates[section] },
+          s1Details,
+        };
+      }
+
+      if (section === "S3") {
+        return {
+          ...base,
+          templates: { S3: sectionTemplates[section] },
+          s3Details,
+        };
+      }
+
+      if (section === "S6") {
+        return {
+          ...base,
+          templates: { S6: sectionTemplates[section] },
+          s6Details,
+        };
+      }
+
+      return base;
+    });
+
     try {
-      const res = await fetch("/api/notices/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      for (const payload of noticesToCreate) {
+        const res = await fetch("/api/notices/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      if (!res.ok) throw new Error("Failed to create notice");
+        if (!res.ok) throw new Error("Failed to create notice");
+      }
 
-      const data = await res.json();
-      alert("Notice created successfully.");
-      // Optional: redirect or refresh
+      alert("Notices created successfully.");
+      // Optional: refresh or redirect
     } catch (err) {
-      console.error("Error creating notice:", err);
-      alert("An error occurred while creating the notice.");
+      console.error("Error creating notices:", err);
+      alert("An error occurred while creating the notices.");
     }
   };
 

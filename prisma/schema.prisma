@@ -252,6 +252,7 @@ enum TemplateType {
   NOTICE
   LETTER
   AWARD
+  NOTICE_COVER_LETTER
 }
 
 enum NoticeSubtype {

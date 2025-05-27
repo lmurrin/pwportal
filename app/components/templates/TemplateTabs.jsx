@@ -2,23 +2,37 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
+import { useEffect } from "react";
 
 const tabs = [
-  { name: "Notices", value: "" },
-  { name: "Letters", value: "letters" },
-  { name: "Awards", value: "awards" },
-  { name: "SOCs", value: "soc" },
+  { name: "Notices", value: "", templateType: "NOTICE" },
+  {
+    name: "Covering Letters",
+    value: "covering-letters",
+    templateType: "NOTICE_COVER_LETTER",
+  },
+  { name: "Letters", value: "letters", templateType: "LETTER" },
+  { name: "Awards", value: "awards", templateType: "AWARD" },
+  { name: "SOCs", value: "soc", templateType: "SOC" },
 ];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function TemplateTabs() {
+export default function TemplateTabs({ onTypeChange }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "";
+
+  const current = tabs.find((tab) => tab.value === currentTab) || tabs[0];
+
+  useEffect(() => {
+    if (onTypeChange) {
+      onTypeChange(current.templateType);
+    }
+  }, [currentTab]);
 
   const handleTabClick = (value) => {
     const newParams = new URLSearchParams(searchParams);

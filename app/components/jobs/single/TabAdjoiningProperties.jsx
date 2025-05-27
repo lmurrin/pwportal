@@ -17,6 +17,23 @@ export default function TabAdjoiningProperties({
 }) {
   const [startDate, setStartDate] = useState("");
   const [currentProperty, setCurrentProperty] = useState();
+  const [notices, setNotices] = useState([]);
+
+  useEffect(() => {
+    async function fetchNotices() {
+      try {
+        const res = await fetch(`/api/notices/by-job/${jobDetails.id}`);
+        const data = await res.json();
+        setNotices(data);
+      } catch (err) {
+        console.error("Failed to fetch notices:", err);
+      }
+    }
+
+    if (jobDetails?.id) {
+      fetchNotices();
+    }
+  }, [jobDetails]);
 
   // Check adjoining property exists before rendering
   if (!adjoiningProperties || adjoiningProperties.length === 0) {
@@ -195,48 +212,7 @@ export default function TabAdjoiningProperties({
                   Notices
                 </h3>
               </div>
-              <dl className="grid grid-cols-1 sm:grid-cols-2">
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    Notice Sections
-                  </dt>
-                  <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
-                    Section 3 & 6
-                  </dd>
-                </div>
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    Date of notice
-                  </dt>
-                  <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
-                    22nd May 2025
-                  </dd>
-                </div>
-              </dl>
-              <dl className="grid grid-cols-1 sm:grid-cols-2">
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    10 Letter sent on
-                  </dt>
-                  <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">-</dd>
-                </div>
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0">
-                  <dt className="text-sm/6 font-medium text-gray-900">
-                    Response received on
-                  </dt>
-                  <dd className="mt-1 text-sm/6 text-gray-700 sm:mt-2">
-                    <input
-                      type="date"
-                      id="noticeResponseDate"
-                      name="noticeResponseDate"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      min="2018-01-01"
-                      placeholder="Select a date"
-                    />
-                  </dd>
-                </div>
-              </dl>
+
               <dl className="grid grid-cols-1 sm:grid-cols-2">
                 <div className="px-4 py-6 sm:col-span-1 sm:px-0">
                   <dt className="text-sm/6 font-medium text-gray-900">
@@ -256,7 +232,7 @@ export default function TabAdjoiningProperties({
                     Chris Belton MRICS - Archway Party Wall Surveyors
                   </dd>
                 </div>
-                <div className="px-4 py-6 sm:col-span-1 sm:px-0 mb-6">
+                <div className="px-4 pt-6 sm:col-span-1 sm:px-0 mb-6">
                   <dt className="text-sm/6 font-medium text-gray-900">
                     Third Surveyor
                   </dt>
@@ -265,62 +241,61 @@ export default function TabAdjoiningProperties({
                   </dd>
                 </div>
               </dl>
-              <div className="px-4 pb-10 sm:col-span-2 sm:px-0">
-                <dd className="text-sm text-gray-900">
-                  <ul
-                    role="list"
-                    className="divide-y divide-gray-100 rounded-md border border-gray-200"
-                  >
-                    <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
-                      <div className="flex w-0 flex-1 items-center">
-                        <PaperClipIcon
-                          aria-hidden="true"
-                          className="size-5 shrink-0 text-gray-400"
-                        />
-                        <div className="ml-4 flex min-w-0 flex-1 gap-2">
-                          <span className="truncate font-medium">
-                            Section 3 Notice
-                          </span>
-                          <span className="shrink-0 text-gray-400">
-                            Served: 22/05/2025 | Expires 01/06/2025
-                          </span>
-                        </div>
-                      </div>
-                      <div className="ml-4 shrink-0">
-                        <a
-                          href="#"
-                          className="font-medium text-indigo-600 hover:text-indigo-500"
-                        >
-                          Download
-                        </a>
-                      </div>
-                    </li>
-                    <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
-                      <div className="flex w-0 flex-1 items-center">
-                        <PaperClipIcon
-                          aria-hidden="true"
-                          className="size-5 shrink-0 text-gray-400"
-                        />
-                        <div className="ml-4 flex min-w-0 flex-1 gap-2">
-                          <span className="truncate font-medium">
-                            Section 6 Notice
-                          </span>
-                          <span className="shrink-0 text-gray-400">
-                            Served: 22/05/2025 | Expires 01/06/2025
-                          </span>
-                        </div>
-                      </div>
-                      <div className="ml-4 shrink-0">
-                        <a
-                          href="#"
-                          className="font-medium text-indigo-600 hover:text-indigo-500"
-                        >
-                          Download
-                        </a>
-                      </div>
-                    </li>
-                  </ul>
-                </dd>
+              <div className="space-y-10 pb-6">
+                {adjoiningProperties.map((property) => {
+                  const propertyNotices = notices.filter(
+                    (notice) => notice.adjoiningPropertyId === property.id
+                  );
+
+                  return (
+                    <div key={property.id}>
+                      <ul
+                        role="list"
+                        className="divide-y divide-gray-100 rounded-md border border-gray-200"
+                      >
+                        {propertyNotices.length > 0 ? (
+                          propertyNotices.map((notice) => (
+                            <li
+                              key={notice.id}
+                              className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6"
+                            >
+                              <div className="flex w-0 flex-1 items-center">
+                                <PaperClipIcon className="size-5 shrink-0 text-gray-400" />
+                                <div className="ml-4 flex min-w-0 flex-1 gap-2">
+                                  <span className="truncate font-medium">
+                                    {notice.sections.join(", ")} Notice
+                                  </span>
+                                  <span className="shrink-0 text-gray-400">
+                                    Served:{" "}
+                                    {new Date(
+                                      notice.startDate
+                                    ).toLocaleDateString("en-GB")}{" "}
+                                    | Expires:{" "}
+                                    {new Date(
+                                      notice.responseDate
+                                    ).toLocaleDateString("en-GB")}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4 shrink-0">
+                                <a
+                                  href={`/api/notices/${notice.id}/generate`}
+                                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                                >
+                                  Download
+                                </a>
+                              </div>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="py-4 px-4 text-sm text-gray-500">
+                            No notices found for this property.
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="border-b border-gray-200 pt-6 pb-5">

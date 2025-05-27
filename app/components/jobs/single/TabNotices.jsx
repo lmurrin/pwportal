@@ -15,7 +15,9 @@ import {
   PencilIcon,
   PlusCircleIcon,
   PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
+import { select } from "@heroui/theme";
 
 export default function TabNotices({ jobDetails, adjoiningProperties }) {
   const [notices, setNotices] = useState([]);
@@ -50,41 +52,115 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
     );
   }
 
+  /*===================================
+  Handle notice generation & download
+  ===================================*/
+  const handleDownload = async () => {
+    if (!selectedNotice?.id) return;
+
+    const res = await fetch(`/api/notices/${selectedNotice.id}/generate`);
+    const blob = await res.blob();
+
+    const url = window.URL.createObjectURL(blob);
+
+    const dateObj = new Date(selectedNotice.startDate);
+    const formattedDate = `${String(dateObj.getDate()).padStart(
+      2,
+      "0"
+    )}/${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(
+      dateObj.getFullYear()
+    ).slice(-2)}`;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedNotice.sections.join(", ")} Notice: ${
+      selectedNotice.adjoiningProperty.addressLine1
+    } ${formattedDate}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  /*=================================
+  Handle notice deletion
+  =================================*/
+  const handleDelete = async () => {
+    if (!selectedNotice?.id) return;
+
+    const confirmDelete = confirm(
+      `Are you sure you want to delete the notice served on ${selectedNotice.ownerName}? This cannot be undone.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/notices/${selectedNotice.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete notice");
+
+      // Optionally refresh or update local state
+      alert("Notice deleted.");
+      setSelectedNotice(null);
+      setNotices((prev) => prev.filter((n) => n.id !== selectedNotice.id));
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("An error occurred while deleting the notice.");
+    }
+  };
+
   return (
     <>
       <div className="flex w-full pt-5">
         {/* Left sidebar - Adjoining Properties List */}
-        <aside className="hidden w-80 shrink-0 border-r border-gray-200 sm:block">
-          <ul role="list" className="divide-y divide-gray-100">
-            {notices.map((notice) => (
-              <li
-                key={notice.id}
-                onClick={() => setSelectedNotice(notice)}
-                className={`relative flex justify-between gap-x-6 py-2 px-2 hover:bg-gray-50 cursor-pointer ${
-                  selectedNotice?.id === notice.id ? "bg-indigo-50" : ""
-                }`}
-              >
-                <div className="flex min-w-0 gap-x-4">
-                  <div className="min-w-0 flex-auto">
-                    <p className="text-sm/6 font-semibold text-gray-900">
-                      {notice.adjoiningProperty?.addressLine1 ||
-                        "Unknown address"}
-                      : Sections {notice.sections.join(", ")}
-                    </p>
-                    <p className="flex items-center text-xs/6 text-gray-500">
-                      <CalendarIcon className="w-3.5 h-3.5 mr-1 fill-gray-300" />
-                      {new Date(notice.startDate).toLocaleDateString()}
-                      <UserIcon className="ml-2 w-3.5 h-3.5 mr-1 fill-gray-300" />
-                      {notice.ownerName}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-x-4">
-                  <ChevronRightIcon className="size-5 flex-none text-gray-400" />
-                </div>
-              </li>
-            ))}
-          </ul>
+        <aside className="hidden w-80 shrink-0 border-r border-gray-200 sm:block overflow-y-auto">
+          {Object.entries(
+            notices.reduce((acc, notice) => {
+              const address =
+                notice.adjoiningProperty?.addressLine1 || "Unknown Address";
+              if (!acc[address]) acc[address] = [];
+              acc[address].push(notice);
+              return acc;
+            }, {})
+          ).map(([address, groupNotices]) => (
+            <div key={address} className="border-b border-gray-200">
+              <h4 className="bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                {address}
+              </h4>
+              <ul role="list" className="">
+                {groupNotices.map((notice) => (
+                  <li
+                    key={notice.id}
+                    onClick={() => setSelectedNotice(notice)}
+                    className={`relative flex justify-between gap-x-6 py-1 px-2 border-l-4 cursor-pointer
+                    ${
+                      selectedNotice?.id === notice.id
+                        ? "bg-indigo-50 border-indigo-600"
+                        : "border-transparent hover:border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex min-w-0 gap-x-4">
+                      <div className="min-w-0 flex-auto">
+                        <p className="text-sm/6 font-semibold text-gray-900">
+                          {notice.sections.join(", ")} Notice
+                        </p>
+                        <p className="flex items-center text-xs/6 text-gray-500">
+                          <CalendarIcon className="w-3.5 h-3.5 mr-1 fill-gray-300" />
+                          {new Date(notice.startDate).toLocaleDateString()}
+                          <UserIcon className="ml-2 w-3.5 h-3.5 mr-1 fill-gray-300" />
+                          {notice.ownerName}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-x-4">
+                      <ChevronRightIcon className="size-5 flex-none text-gray-400" />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
           <button
             type="button"
@@ -125,6 +201,7 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
                     </button>
                     <button
                       type="button"
+                      onClick={handleDownload}
                       className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                     >
                       <DocumentArrowDownIcon
@@ -143,13 +220,24 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
                       />
                       Record Response
                     </button>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      className="rounded inline-flex items-center gap-x-1.5 bg-red-50 px-3 py-2 text-xs text-red-700 ring-1 ring-inset ring-red-300 hover:bg-red-100"
+                    >
+                      <TrashIcon
+                        aria-hidden="true"
+                        className="-ml-0.5 size-4"
+                      />{" "}
+                      Delete Notice
+                    </button>
                   </div>
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="border-b border-gray-200 pt-5 pb-5">
                   <h3 className="text-base font-semibold text-gray-900">
-                    Notice Details
+                    {selectedNotice.sections} Notice Details
                   </h3>
                 </div>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 mb-6">
