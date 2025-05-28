@@ -113,7 +113,7 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
   return (
     <div className="mt-6">
       <div className=" bg-indigo-50 p-3 rounded-lg sm:flex sm:items-center sm:justify-between px-3">
-        <h3 className="text-base font-semibold text-gray-900">Notices</h3>
+        <h3 className="text-base font-semibold text-gray-900">Notice Stage</h3>
         <div className="mt-3 sm:ml-4 sm:mt-0">
           <button
             type="button"

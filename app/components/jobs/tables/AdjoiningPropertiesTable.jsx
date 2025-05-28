@@ -140,7 +140,7 @@ export default function AdjoiningPropertiesTable({ adjoiningProperties }) {
                               }}
                             >
                               <PencilSquareIcon className="h-4 w-4" />
-                              Edit property
+                              Edit owner
                             </button>
                           </div>
                         </div>
