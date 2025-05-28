@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { useEffect, useState } from "react";
+import AdjoiningOwnersTable from "../../tables/AdjoiningOwnersTable";
 
 export default function TabAdjoiningProperties({
   jobDetails,
@@ -17,23 +18,6 @@ export default function TabAdjoiningProperties({
 }) {
   const [startDate, setStartDate] = useState("");
   const [currentProperty, setCurrentProperty] = useState();
-  const [notices, setNotices] = useState([]);
-
-  useEffect(() => {
-    async function fetchNotices() {
-      try {
-        const res = await fetch(`/api/notices/by-job/${jobDetails.id}`);
-        const data = await res.json();
-        setNotices(data);
-      } catch (err) {
-        console.error("Failed to fetch notices:", err);
-      }
-    }
-
-    if (jobDetails?.id) {
-      fetchNotices();
-    }
-  }, [jobDetails]);
 
   // Check adjoining property exists before rendering
   if (!adjoiningProperties || adjoiningProperties.length === 0) {
@@ -44,44 +28,8 @@ export default function TabAdjoiningProperties({
 
   return (
     <>
-      <div className=" border-gray-200 py-2 sm:flex sm:items-center sm:justify-between">
-        {/* <div className="flex flex-col">
-          <h3 className="text-base font-semibold text-gray-900">
-            Adjoining Properties
-          </h3>
-          <p className="text-sm/6 text-gray-400">
-            View and manage adjoining properties and owners.
-          </p>
-        </div> */}
-        {/* <div className="rounded-md sm:mt-0 flex items-center gap-2 bg-indigo-50 border border-indigo-100 w-full">
-          <div className="py-4 px-3 bg-indigo-100">
-            <h3 className="text-xs font-bold text-gray-600">Actions:</h3>
-          </div>
-          <div className="py-2 flex gap-2">
-            <button
-              type="button"
-              className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-            >
-              <PencilIcon aria-hidden="true" className="-ml-0.5 size-4" />
-              Edit Job
-            </button>
-            <button
-              type="button"
-              className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-            >
-              <PlusCircleIcon aria-hidden="true" className="-ml-0.5 size-4" />
-              Edit Adjoining Properties
-            </button>
-            <button
-              type="button"
-              className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-            >
-              <PlusCircleIcon aria-hidden="true" className="-ml-0.5 size-4" />
-              Create Notice
-            </button>
-          </div>
-        </div> */}
-      </div>
+      <AdjoiningOwnersTable adjoiningProperties={adjoiningProperties} />
+      <div className=" border-gray-200 py-2 sm:flex sm:items-center sm:justify-between"></div>
       <div className="flex w-full">
         {/* Left sidebar - Adjoining Properties List */}
         <aside className="hidden w-80 shrink-0 border-r border-gray-200 sm:block">
@@ -243,9 +191,7 @@ export default function TabAdjoiningProperties({
               </dl>
               <div className="space-y-10 pb-6">
                 {adjoiningProperties.map((property) => {
-                  const propertyNotices = notices.filter(
-                    (notice) => notice.adjoiningPropertyId === property.id
-                  );
+                  const propertyNotices = property.notices ?? [];
 
                   return (
                     <div key={property.id}>

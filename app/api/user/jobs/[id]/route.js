@@ -3,10 +3,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-/*=================================================================================
-  Get single job by id & return adjoining properties
-=================================================================================*/
-
 export async function GET(request, { params }) {
   const { id } = params;
 
@@ -24,7 +20,25 @@ export async function GET(request, { params }) {
         userId,
       },
       include: {
-        properties: true,
+        properties: {
+          include: {
+            notices: {
+              include: {
+                documents: true,
+                templateS1: true,
+                templateS3: true,
+                templateS6: true,
+              },
+            },
+            surveyorAppointments: {
+              include: {
+                surveyor: true,
+              },
+            },
+          },
+        },
+        company: true,
+        namedSurveyor: true,
       },
     });
 

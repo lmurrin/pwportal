@@ -161,6 +161,7 @@ model GeneratedNotice {
   ownerName           String
   startDate           DateTime
   responseDate        DateTime
+  responseReceived    DateTime?
   sections            String[]
 
   s1WallPosition String?
