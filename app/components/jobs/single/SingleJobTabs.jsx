@@ -5,8 +5,9 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 
 const tabs = [
   { name: "Job Details", value: "" },
-  { name: "Adjoining Properties", value: "adjoining-properties" },
+  { name: "Adjoining Owners", value: "adjoining-owners" },
   { name: "Notices", value: "notices" },
+  { name: "Notices New", value: "notices-new" },
   { name: "SOCs", value: "soc" },
   { name: "Awards", value: "awards" },
   { name: "Letters", value: "letters" },

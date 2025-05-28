@@ -12,6 +12,8 @@ import TabNotices from "@/app/components/jobs/single/TabNotices";
 import DownloadNoticeButton from "@/app/components/documents/DownloadNoticeButton";
 import GenerateDocumentForm from "@/app/components/documents/GenerateDocForm";
 import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
+import TabNoticesNew from "@/app/components/jobs/single/TabNoticesNew";
+import AdjoiningPropertiesDetails from "@/app/components/jobs/single/AdjoiningPropertiesDetails";
 
 const quickLinks = [
   { name: "Create notice", href: "#" },
@@ -76,11 +78,17 @@ export default function JobDetailPage() {
         </>
       )} */}
 
-      {tab === "adjoining-properties" && (
-        <TabAdjoiningProperties
-          jobDetails={jobDetails}
-          adjoiningProperties={adjoiningProperties}
-        />
+      {tab === "adjoining-owners" && (
+        <>
+          <TabAdjoiningProperties
+            jobDetails={jobDetails}
+            adjoiningProperties={adjoiningProperties}
+          />
+        </>
+      )}
+
+      {tab === "notices-new" && (
+        <TabNoticesNew adjoiningProperties={adjoiningProperties} />
       )}
 
       {tab === "notices" && (

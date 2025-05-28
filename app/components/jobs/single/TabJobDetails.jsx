@@ -31,9 +31,20 @@ export default function TabJobDetails({
     .join("\n");
 
   return (
-    <>
+    <div className="mt-6">
+      <div className=" bg-indigo-50 p-3 rounded-lg sm:flex sm:items-center sm:justify-between px-3">
+        <h3 className="text-base font-semibold text-gray-900">Job Details</h3>
+        <div className="mt-3 sm:ml-4 sm:mt-0">
+          <button
+            type="button"
+            className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Edit Job
+          </button>
+        </div>
+      </div>
       {/* Two-column layout starts here */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 ">
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
         {/* Main content (2/3 width on large screens) */}
         <div className="lg:col-span-2">
           <div>
@@ -226,6 +237,6 @@ export default function TabJobDetails({
           </div>
         </aside>
       </div>
-    </>
+    </div>
   );
 }

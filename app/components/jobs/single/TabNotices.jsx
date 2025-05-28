@@ -111,8 +111,19 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
   };
 
   return (
-    <>
-      <div className="flex w-full pt-5">
+    <div className="mt-6">
+      <div className=" bg-indigo-50 p-3 rounded-lg sm:flex sm:items-center sm:justify-between px-3">
+        <h3 className="text-base font-semibold text-gray-900">Notices</h3>
+        <div className="mt-3 sm:ml-4 sm:mt-0">
+          <button
+            type="button"
+            className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Create New
+          </button>
+        </div>
+      </div>
+      <div className="flex w-full mt-8 pl-3">
         {/* Left sidebar - Adjoining Properties List */}
         <aside className="hidden w-80 shrink-0 border-r border-gray-200 sm:block overflow-y-auto">
           {Object.entries(
@@ -164,7 +175,10 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
 
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setOpen(true);
+              if (selectedNotice) setSelectedNotice(null);
+            }}
             className="mt-2 rounded-full bg-indigo-600 p-1 text-xs flex items-center gap-1 pr-3 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             <PlusIcon aria-hidden="true" className="size-5" /> Add
@@ -172,7 +186,7 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8">
+        <main className="flex-1 px-3">
           {showNewNoticeForm ? (
             <CreateNoticeForm
               jobDetails={jobDetails}
@@ -191,6 +205,7 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
                   <div className="py-2 flex gap-2">
                     <button
                       type="button"
+                      onClick={() => setOpen(true)}
                       className="rounded inline-flex items-center gap-x-1.5  bg-white px-3 py-2 text-xs text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                     >
                       <PencilIcon
@@ -357,6 +372,6 @@ export default function TabNotices({ jobDetails, adjoiningProperties }) {
           notice={selectedNotice}
         />
       </Overlay>
-    </>
+    </div>
   );
 }

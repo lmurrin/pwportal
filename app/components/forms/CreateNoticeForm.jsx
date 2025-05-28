@@ -134,6 +134,37 @@ export default function CreateNoticeForm({
     );
   };
 
+  // Populate form with existing notice data for editing
+  useEffect(() => {
+    if (!notice) return;
+
+    setStartDate(notice.startDate);
+    setResponseDate(notice.responseDate);
+
+    const matchedProperty = adjoiningProperties.find(
+      (prop) => prop.id === notice.adjoiningPropertyId
+    );
+    setSelectedProperty(matchedProperty || null);
+
+    // Parse selected sections
+    const sectionMap = { S1: 1, S3: 3, S6: 6 };
+    const sectionIds = notice.sections?.map((s) => sectionMap[s]) || [];
+    setSelectedSections(sectionIds);
+
+    // Prefill paragraphs and template selections
+    if (notice.s3Details?.paragraphs) {
+      setS3Paragraphs(notice.s3Details.paragraphs);
+    }
+
+    const templatesFromNotice = {};
+    notice.sections?.forEach((s) => {
+      if (notice.templates?.[s]) {
+        templatesFromNotice[s] = notice.templates[s];
+      }
+    });
+    setSectionTemplates(templatesFromNotice);
+  }, [notice, adjoiningProperties]);
+
   const filteredProperties =
     query === ""
       ? adjoiningProperties
@@ -150,7 +181,7 @@ export default function CreateNoticeForm({
   /*==============================================
 Handle create notice
 ==============================================*/
-  const handleCreateNotice = async () => {
+  const handleSubmit = async () => {
     if (!selectedProperty || selectedSections.length === 0) {
       alert("Please select a recipient and at least one section.");
       return;
@@ -181,56 +212,33 @@ Handle create notice
       description: document.getElementById("s6WorksDescription")?.value,
     };
 
-    const noticesToCreate = selectedSections.map((sectionId) => {
-      const section = `S${sectionId}`;
-      const base = {
-        ...commonData,
-        sections: [section],
-      };
+    const payload = {
+      ...commonData,
+      sections: selectedSections.map((id) => `S${id}`),
+      templates: sectionTemplates,
+      ...(selectedSections.includes(1) && { s1Details }),
+      ...(selectedSections.includes(3) && { s3Details }),
+      ...(selectedSections.includes(6) && { s6Details }),
+    };
 
-      if (section === "S1") {
-        return {
-          ...base,
-          templates: { S1: sectionTemplates[section] },
-          s1Details,
-        };
-      }
-
-      if (section === "S3") {
-        return {
-          ...base,
-          templates: { S3: sectionTemplates[section] },
-          s3Details,
-        };
-      }
-
-      if (section === "S6") {
-        return {
-          ...base,
-          templates: { S6: sectionTemplates[section] },
-          s6Details,
-        };
-      }
-
-      return base;
-    });
+    const url = notice ? `/api/notices/${notice.id}` : "/api/notices/create";
+    const method = notice ? "PATCH" : "POST";
 
     try {
-      for (const payload of noticesToCreate) {
-        const res = await fetch("/api/notices/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-        if (!res.ok) throw new Error("Failed to create notice");
-      }
+      if (!res.ok) throw new Error("Failed to save notice");
 
-      alert("Notices created successfully.");
-      // Optional: refresh or redirect
+      alert(
+        notice ? "Notice updated successfully." : "Notice created successfully."
+      );
     } catch (err) {
-      console.error("Error creating notices:", err);
-      alert("An error occurred while creating the notices.");
+      console.error("Error submitting notice:", err);
+      alert("An error occurred while saving the notice.");
     }
   };
 
@@ -724,11 +732,11 @@ Handle create notice
           })}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white px-12 py-4 flex items-center justify-end gap-x-6 shadow-md">
+        <div className="fixed bottom-0 left-0 right-0 border-t border-gray-300 bg-gray-100 px-12 py-4 flex items-center justify-end gap-x-6 shadow-md">
           <button
             type="submit"
-            onClick={handleCreateNotice}
-            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={handleSubmit}
+            className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Create Notice
           </button>
